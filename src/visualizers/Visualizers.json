@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "id": "PetriView",
+    "title": "PetriView",
+    "panel": "panels/PetriView/PetriViewPanel",
+    "DEBUG_ONLY": false
+  }
+]
