@@ -12,12 +12,12 @@
       }
     },
     "visualizers": {
-      "PetriView": {
-        "src": "panels/PetriView/PetriViewPanel",
-        "title": "PetriView",
-        "panel": "src/visualizers/panels/PetriView",
+      "PetrinetView": {
+        "src": "panels/PetrinetView/PetrinetViewPanel",
+        "title": "PetrinetView",
+        "panel": "src/visualizers/panels/PetrinetView",
         "secondary": false,
-        "widget": "src/visualizers/widgets/PetriView"
+        "widget": "src/visualizers/widgets/PetrinetView"
       }
     }
   },

@@ -22,6 +22,8 @@
     "webgme": "^2.23.0"
   },
   "dependencies": {
+    "jointjs": "^3.3.1",
+    "lodash": "^4.17.21",
     "webgme-bindings": "^1.2.1"
   },
   "description": "First, install the myminiproject following: - [NodeJS](https://nodejs.org/en/) (LTS recommended) - [MongoDB](https://www.mongodb.com/)",

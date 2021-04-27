@@ -1,8 +1,8 @@
 [
   {
-    "id": "PetriView",
-    "title": "PetriView",
-    "panel": "panels/PetriView/PetriViewPanel",
+    "id": "PetrinetView",
+    "title": "PetrinetView",
+    "panel": "panels/PetrinetView/PetrinetViewPanel",
     "DEBUG_ONLY": false
   }
 ]
