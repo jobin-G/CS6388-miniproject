@@ -118,7 +118,8 @@ define([
             //we need our states (names, position, type), need the set of next state (with event names)
             const smNode = self._client.getNode(self._currentNodeId);
             const elementIds = smNode.getChildrenIds();
-            const placeList = []
+            let placeList = []
+            let initialPlaceList = []
             const transitionList = []
             const arcList = []
             
@@ -130,6 +131,12 @@ define([
                 // the simple way of checking type
                 if (node.isTypeOf(META['Place'])) {
                     placeList[node.getId()] = {path: node.getId(),
+                        name: node.getAttribute('name'),
+                        tokens: node.getAttribute('tokens'),
+                        x: node.getRegistry('position')['x'],
+                        y: node.getRegistry('position')['y']
+                    };
+                    initialPlaceList[node.getId()] = {path: node.getId(),
                         name: node.getAttribute('name'),
                         tokens: node.getAttribute('tokens'),
                         x: node.getRegistry('position')['x'],
@@ -154,7 +161,8 @@ define([
                 }
             });
 
-            sm.Places = placeList;         
+            sm.Places = placeList;
+            sm.Initial_Places = initialPlaceList;        
             sm.Transitions = transitionList;
             sm.Arcs = arcList;
 

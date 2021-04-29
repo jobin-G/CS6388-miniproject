@@ -26,8 +26,11 @@ define(['jointjs',
             height = this._el.height(),
             self = this;
 
+
         // set widget class
         this._el.addClass(WIDGET_CLASS);
+
+        this._initialState;
 
         this._jointSM = new joint.dia.Graph;
         this._jointPaper = new joint.dia.Paper({
@@ -44,65 +47,53 @@ define(['jointjs',
         // add event calls to elements
         this._jointPaper.on('element:pointerdblclick', function(elementView) {
             const currentElement = elementView.model;
-            
 
             //If a transition is clicked...
             if(currentElement.attributes.type == "standard.Rectangle"){
                 let sm = self._webgmeSM;
                 let transition_path = sm.id2path[currentElement.id];
-                let transition_src;
-                let transition_dst;
+                let transition_src = [];
+                let transition_dst = [];
                 
-                //Loop through all arcs to find the Place the Transition is src-ed from and dst-ed to
+                //Loop through all arcs to find the Places the Transition is src-ed from and dst-ed to
                 Object.keys(sm.Arcs).forEach(arc => {
                     let a = sm.Arcs[arc];
                     
                     if(a.dst == transition_path){
-                        transition_src = a.src;
+                        transition_src.push(a.src);
                     };
 
                     if(a.src == transition_path){
-                        transition_dst = a.dst;
+                        transition_dst.push(a.dst);
                     };
                 });
+                
+                //If any src has an available token, decrement it and increment the first dst
+                for (let i = 0; i < transition_src.length; i++) {
+                    let src = transition_src[i];
+                    console.log(src);
+                    if(sm.Places[src].tokens > 0){
+                        sm.Places[src].tokens= sm.Places[src].tokens-1;
 
-                //If the src has an available token, decrement it and increment the dst
-                if(sm.Places[transition_src].tokens > 0){
-                    sm.Places[transition_src].tokens= sm.Places[transition_src].tokens-1;
-                    sm.Places[transition_dst].tokens = sm.Places[transition_dst].tokens+1;
-
-                    //**** REDUNDANT CODE - Couldn't figure out how to get the SVGs to reload :( */
-                    //Logic for adding Place nodes into Visualization
-                    Object.keys(sm.Places).forEach(place => {
-                        let nodeDetails = (sm.Places[place]);
-                        let tokens = nodeDetails.tokens;
-                        let tokenSVGArray =[];
-                        let placeSVG = " ";
-            
-                    //This for loop builds the token portion of the Place SVG
-                    for (i = 1; i <= tokens; i += 1) {
-                        tokenSVGArray.push(`<circle cx="50" cy="20" fill="black" stroke="white" r="10" transform="rotate(${i*60},50,50)"/>`)
-                        }
-                    
-                    placeSVG = '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="50" stroke="black" stroke-width="2" fill="white" id="place"/>'+tokenSVGArray.join(' ')+'</svg>'
-             
-                    var vertex = new joint.shapes.basic.Image({
-                        markup: placeSVG,      
-                        });
-                                
-                    //Place the SVG in the same position as the META node
-                    vertex.position(nodeDetails.x, nodeDetails.y)
-                        
-                    //Add SVG to graph
-                    vertex.addTo(self._jointSM);
-            
-                    sm.Places[place].joint = vertex;
-                    sm.id2path[vertex.id] = place;
-                    sm.path2id[place] = vertex.id;
-                    });
+                        let dst = transition_dst.pop();
+                        sm.Places[dst].tokens = sm.Places[dst].tokens+1;
+                        break;
+                    }
                 }
+                // transition_src.every(src => {
+                //     console.log(src);
+                //     if(sm.Places[src].tokens > 0){
+                //         sm.Places[src].tokens= sm.Places[src].tokens-1;
+
+                //         let dst = transition_dst.pop();
+                //         sm.Places[dst].tokens = sm.Places[dst].tokens+1;
+                //         return;
+                //     }   
+                // });
+                self._decorateMachine();
             }
         });
+        this._webgmeSM = null;
     };
 
     PetrinetViewWidget.prototype.onWidgetContainerResize = function (width, height) {
@@ -115,10 +106,9 @@ define(['jointjs',
         self._webgmeSM = machineDescriptor;
         self._webgmeSM.current = self._webgmeSM.init;
         self._jointSM.clear();
-        const sm = self._webgmeSM;
+        let sm = self._webgmeSM;
         sm.id2path = {};
         sm.path2id = {};
-        
 
         Object.keys(sm).forEach(nodeType => {
 
@@ -212,62 +202,50 @@ define(['jointjs',
 
     PetrinetViewWidget.prototype.fireEvent = function (event) {
         const self = this;
-        const current = self._webgmeSM.states[self._webgmeSM.current];
-        const link = current.jointNext[event];
-        const linkView = link.findView(self._jointPaper);
-        linkView.sendToken(joint.V('circle', { r: 10, fill: 'black' }), {duration:500}, function() {
-           self._webgmeSM.current = current.next[event];
-           self._decorateMachine();
-        });
-
-        paper.on('cell:pointerdblclick', function(cellView) {
-            var isElement = cellView.model.isElement();
-            var message = (isElement ? 'Element' : 'Link') + ' clicked';
-            info.attr('label/text', message);
-        
-            info.attr('body/visibility', 'visible');
-            info.attr('label/visibility', 'visible');
-        });
-
 
     };
 
     PetrinetViewWidget.prototype.resetMachine = function () {
         this._webgmeSM.current = this._webgmeSM.init;
+
+        Object.keys(this._webgmeSM.Places).forEach(place => {
+            this._webgmeSM.Places[place].tokens = this._webgmeSM.Initial_Places[place].tokens;
+        });
+
+
         this._decorateMachine();
     };
 
     PetrinetViewWidget.prototype._decorateMachine = function() {
-        const sm = this._webgmeSM.init;
-        console.log(sm);
 
-        // Object.keys(sm.Places).forEach(place => {
-        //     let nodeDetails = (sm.Places[place]);
-        //     let tokens = nodeDetails.tokens;
-        //     let tokenSVGArray =[];
-        //     let placeSVG = " ";
+        //Logic for adding Place nodes into Visualization
+        Object.keys(this._webgmeSM.Places).forEach(place => {
+            let nodeDetails = (this._webgmeSM.Places[place]);
+            let tokens = nodeDetails.tokens;
+            let tokenSVGArray =[];
+            let placeSVG = " ";
 
-        // //This for loop builds the token portion of the Place SVG
-        // for (i = 1; i <= tokens; i += 1) {
-        //     tokenSVGArray.push(`<circle cx="50" cy="20" fill="black" stroke="white" r="10" transform="rotate(${i*60},50,50)"/>`)
-        //     }
+        //This for loop builds the token portion of the Place SVG
+        for (i = 1; i <= tokens; i += 1) {
+            tokenSVGArray.push(`<circle cx="50" cy="20" fill="black" stroke="white" r="10" transform="rotate(${i*60},50,50)"/>`)
+            }
         
-        // placeSVG = '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="50" stroke="black" stroke-width="2" fill="white" id="place"/>'+tokenSVGArray.join(' ')+'</svg>'
+        placeSVG = '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="50" stroke="black" stroke-width="2" fill="white" id="place"/>'+tokenSVGArray.join(' ')+'</svg>'
  
-        // var vertex = new joint.shapes.basic.Image({
-        //     markup: placeSVG,      
-        //     });
+        var vertex = new joint.shapes.basic.Image({
+            markup: placeSVG,      
+            });
                     
-        // //Place the SVG in the same position as the META node
-        // vertex.position(nodeDetails.x, nodeDetails.y)
+        //Place the SVG in the same position as the META node
+        vertex.position(nodeDetails.x, nodeDetails.y)
             
-        // //Add SVG to graph
-        // vertex.addTo(self._jointSM);
+        //Add SVG to graph
+        vertex.addTo(this._jointSM);
 
-        // self._webgmeSM.Places[place].joint = vertex;
-        // self._webgmeSM.id2path[vertex.id] = place;
-        // self._webgmeSM.path2id[place] = vertex.id;
-        // });
+        this._webgmeSM.Places[place].joint = vertex;
+        this._webgmeSM.id2path[vertex.id] = place;
+        this._webgmeSM.path2id[place] = vertex.id;
+        });
     };
 
     PetrinetViewWidget.prototype._setCurrentState = function(newCurrent) {

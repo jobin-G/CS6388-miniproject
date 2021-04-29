@@ -9,6 +9,10 @@
       "StateMachine": {
         "src": "src/plugins/StateMachine",
         "test": "test/plugins/StateMachine"
+      },
+      "Classification": {
+        "src": "src/plugins/Classification",
+        "test": "test/plugins/Classification"
       }
     },
     "visualizers": {
