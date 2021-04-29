@@ -23,11 +23,10 @@ SVGs are used to indicate how many tokens are assigned to a Place node.
 
 ## Classification
 The application has a plugin enabled that identifies whether your model can be classified as one of the following
-1. Free-choice Petrinet
-2. State machine​
+1. Free Choice
+2. State machine
 3. Marked graph
-4. Workflow net ​- a petri net is a workflow net if it has exactly one source place s where *s
-=∅, one sink place o where o* =∅, and every x∈P∪T is on a path from s to o.
+4. Workflow net
 
 ## Visualization
 The application provides a PetrinetView which allows a user to simulate the flow of tokens through the graph. At the moment
