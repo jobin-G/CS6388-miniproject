@@ -10,7 +10,7 @@ Second, start mongodb locally by running the `mongod` executable in your mongodb
 Then, run `webgme start` from the project root to start . Finally, navigate to `http://localhost:8888` to start using myminiproject!
 
 
-# Petrinet Modeling
+## Modeling
 This application allows you to design Petrinets using a local instance to WebGME. 
 
 Models are constrained to the definiton of a Petrinet which are as follows.
